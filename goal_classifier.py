@@ -30,6 +30,7 @@ def get_examples():
     }
 
 
+# def classify_content_with_gemini(goals, content):
 def classify_content_with_gemini(goals, content):
     input_ = {
         "goals": goals,
@@ -61,6 +62,21 @@ Now time for you to do this classification. Below are the goals and content to b
         return f"Error during API call: {e}"
 
 
+def load_tests():
+    filepath = "tests.jsonl"
+    tests = []
+
+    with open(filepath, "r", encoding="utf-8") as f:
+        for line in f:
+            if line.strip():  # Skip empty lines
+                try:
+                    tests.append(json.loads(line))
+                except json.JSONDecodeError as e:
+                    print(f"Error decoding JSON on line: {line.strip()} - {e}")
+
+    return tests
+
+
 def main():
     """
     Main function to run the goal classifier with predefined goals and test cases from a file.
@@ -74,23 +90,28 @@ def main():
     ]
 
     # Read test cases from file
-    try:
-        with open("test_cases.txt", "r") as f:
-            test_cases = [
-                line.strip() for line in f.readlines() if line.strip()
-            ]
-    except FileNotFoundError:
-        print("Error: test_cases.txt not found. Please create this file.")
-        return
+    # try:
+    #     with open("test_cases.txt", "r") as f:
+    #         test_cases = [
+    #             line.strip() for line in f.readlines() if line.strip()
+    #         ]
+    # except FileNotFoundError:
+    #     print("Error: test_cases.txt not found. Please create this file.")
+    #     return
+    tests = load_tests()
 
-    print("--- Goal-Content Aligner ---")
-    print("Goals:", goals)
-    print("------------------------------------------")
+    # print("--- Goal-Content Aligner ---")
+    # print("Goals:", goals)
+    # print("------------------------------------------")
 
-    for i, test_case in enumerate(test_cases):
-        classification = classify_content_with_gemini(goals, test_case)
-        print(f'Test Case {i+1}: "{test_case}"')
-        print(f"  -> Classification: {classification}")
+    for i, test in enumerate(test_cases):
+        goals = test["goals"]
+        content = test["content"]
+        ground_truth = test["alignment"]
+        classification = classify_content_with_gemini(goals, content)
+        print(f'Test Case {i+1}: "{test}"')
+        print(f"  -> prediction: {classification}")
+        print(f"  -> ground truth: {ground_truth}")
         print("------------------------------------------")
         break
 
